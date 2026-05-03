@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Store</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        nav { background: #333; color: white; padding: 15px; }
+        nav button { margin-right: 10px; padding: 8px 15px; background: #0066cc; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        nav button:hover { background: #0052a3; }
+        .container { max-width: 1000px; margin: 20px auto; }
+        .section { display: none; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .section.active { display: block; }
+        h1 { color: #333; margin-bottom: 20px; border-bottom: 2px solid #0066cc; padding-bottom: 10px; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 3px; }
+        button { padding: 10px 15px; background: #0066cc; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0052a3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #0066cc; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .book-card { background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #0066cc; }
+        .book-card h3 { color: #333; margin-bottom: 5px; }
+        .book-card p { color: #666; margin: 3px 0; }
+        .credentials { background: #e3f2fd; padding: 15px; border-radius: 5px; margin-top: 20px; border-left: 4px solid #0066cc; }
+    </style>
+</head>
+<body>
+    <nav>
+        <button onclick="showSection('home')">🏠 Home</button>
+        <button onclick="showSection('catalog')">📚 Catalog</button>
+        <button onclick="showSection('manage')">⚙️ Manage Books</button>
+    </nav>
+
+    <div class="container">
+        <!-- Home Section -->
+        <div id="home" class="section active">
+            <h1>📚 Welcome to Book Store</h1>
+            <p>A Spring Boot application for browsing and managing books.</p>
+            <div class="credentials">
+                <p><strong>Test Credentials:</strong></p>
+                <p>Admin: <strong>admin / admin123</strong></p>
+                <p>User: <strong>user / user123</strong></p>
+            </div>
+            <h2 style="margin-top: 20px;">Features:</h2>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>View all books in catalog</li>
+                <li>Search books by title or category</li>
+                <li>Add, update, and delete books (admin)</li>
+                <li>Secure authentication with Basic Auth</li>
+            </ul>
+        </div>
+
+        <!-- Catalog Section -->
+        <div id="catalog" class="section">
+            <h1>📚 Book Catalog</h1>
+            <div>
+                <label>Search by title:</label>
+                <input type="text" id="searchTitle" placeholder="Enter book title" onkeyup="searchBooks()">
+            </div>
+            <div id="booksContainer"></div>
+        </div>
+
+        <!-- Manage Books Section -->
+        <div id="manage" class="section">
+            <h1>⚙️ Manage Books</h1>
+            <div>
+                <label>Book Title:</label>
+                <input type="text" id="title" placeholder="Enter title">
+                <label>Author:</label>
+                <input type="text" id="author" placeholder="Enter author">
+                <label>Price:</label>
+                <input type="number" id="price" placeholder="Enter price" step="0.01">
+                <label>Quantity:</label>
+                <input type="number" id="quantity" placeholder="Enter quantity">
+                <label>Category:</label>
+                <input type="text" id="category" placeholder="Enter category">
+                <label>Description:</label>
+                <textarea id="description" placeholder="Enter description" rows="3"></textarea>
+                <button onclick="addBook()">Add Book</button>
+            </div>
+            <table id="manageBooksTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="manageBooksBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8080/api/books";
+        const credentials = btoa("admin:admin123"); // Base64 encode for Basic Auth
+
+        function getAuthHeader() {
+            return "Basic " + credentials;
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            if (sectionId === 'catalog') loadBooks();
+            if (sectionId === 'manage') loadManageBooks();
+        }
+
+        function loadBooks() {
+            fetch(API_URL, { headers: { 'Authorization': getAuthHeader() } })
+                .then(r => r.json())
+                .then(books => {
+                    let html = '';
+                    books.forEach(b => {
+                        html += `<div class="book-card">
+                            <h3>${b.title}</h3>
+                            <p><strong>Author:</strong> ${b.author}</p>
+                            <p><strong>Price:</strong> Rs. ${b.price}</p>
+                            <p><strong>Category:</strong> ${b.category}</p>
+                            <p><strong>Available:</strong> ${b.quantity} units</p>
+                        </div>`;
+                    });
+                    document.getElementById('booksContainer').innerHTML = html;
+                })
+                .catch(e => console.error(e));
+        }
+
+        function searchBooks() {
+            let title = document.getElementById('searchTitle').value;
+            if (!title) {
+                loadBooks();
+                return;
+            }
+            fetch(`${API_URL}/search/${title}`, { headers: { 'Authorization': getAuthHeader() } })
+                .then(r => r.json())
+                .then(books => {
+                    let html = '';
+                    books.forEach(b => {
+                        html += `<div class="book-card">
+                            <h3>${b.title}</h3>
+                            <p><strong>Author:</strong> ${b.author}</p>
+                            <p><strong>Price:</strong> Rs. ${b.price}</p>
+                        </div>`;
+                    });
+                    document.getElementById('booksContainer').innerHTML = html;
+                });
+        }
+
+        function addBook() {
+            let book = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                price: parseFloat(document.getElementById('price').value),
+                quantity: parseInt(document.getElementById('quantity').value),
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value
+            };
+
+            if (!book.title || !book.author || !book.price) {
+                alert('Please fill required fields');
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': getAuthHeader(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(book)
+            })
+            .then(r => r.json())
+            .then(data => {
+                alert('Book added successfully!');
+                document.querySelectorAll('input, textarea').forEach(e => e.value = '');
+                loadManageBooks();
+            })
+            .catch(e => alert('Error: ' + e));
+        }
+
+        function loadManageBooks() {
+            fetch(API_URL, { headers: { 'Authorization': getAuthHeader() } })
+                .then(r => r.json())
+                .then(books => {
+                    let html = '';
+                    books.forEach(b => {
+                        html += `<tr>
+                            <td>${b.id}</td>
+                            <td>${b.title}</td>
+                            <td>${b.author}</td>
+                            <td>Rs. ${b.price}</td>
+                            <td>${b.quantity}</td>
+                            <td>
+                                <button onclick="deleteBook(${b.id})" style="background: #d32f2f;">Delete</button>
+                            </td>
+                        </tr>`;
+                    });
+                    document.getElementById('manageBooksBody').innerHTML = html;
+                });
+        }
+
+        function deleteBook(id) {
+            if (confirm('Delete this book?')) {
+                fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': getAuthHeader() }
+                })
+                .then(() => {
+                    alert('Book deleted!');
+                    loadManageBooks();
+                })
+                .catch(e => alert('Error: ' + e));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem 8 - Student Feedback Form</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef } = React;
+
+    function FeedbackApp() {
+      const [feedbackList, setFeedbackList] = useState([]);
+      
+      // Controlled component state
+      const [form, setForm] = useState({
+        name: '',
+        email: '',
+        subject: '',
+        rating: '5',
+        feedback: '',
+      });
+
+      const [error, setError] = useState('');
+
+      // useRef for DOM access
+      const nameInputRef = useRef(null);
+      const formRef = useRef(null);
+
+      // Handle input changes (controlled components)
+      const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setForm({
+          ...form,
+          [name]: value,
+        });
+        setError(''); // Clear error on input change
+      };
+
+      // Validate form
+      const validateForm = () => {
+        if (form.name.trim() === '') {
+          setError('Name is required.');
+          nameInputRef.current?.focus();
+          return false;
+        }
+        if (form.email.trim() === '') {
+          setError('Email is required.');
+          return false;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+          setError('Invalid email format.');
+          return false;
+        }
+        if (form.subject.trim() === '') {
+          setError('Subject is required.');
+          return false;
+        }
+        if (form.feedback.trim() === '') {
+          setError('Feedback is required.');
+          return false;
+        }
+        return true;
+      };
+
+      // Handle submit
+      const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+          return;
+        }
+
+        // Add feedback to list with unique key (timestamp)
+        const newFeedback = {
+          id: Date.now(),
+          ...form,
+        };
+
+        setFeedbackList([newFeedback, ...feedbackList]);
+
+        // Reset form
+        setForm({
+          name: '',
+          email: '',
+          subject: '',
+          rating: '5',
+          feedback: '',
+        });
+        nameInputRef.current?.focus();
+        setError('');
+      };
+
+      // Handle delete feedback
+      const deleteFeedback = (id) => {
+        setFeedbackList(feedbackList.filter((item) => item.id !== id));
+      };
+
+      return (
+        <div className="app-container">
+          <div className="header">
+            <h1>Student Feedback Form</h1>
+            <p className="subtitle">Share your feedback about courses and sessions</p>
+          </div>
+
+          <div className="form-container">
+            <form ref={formRef} onSubmit={handleSubmit} className="feedback-form">
+              <div className="form-group">
+                <label htmlFor="name">Name *</label>
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={form.name}
+                  onChange={handleInputChange}
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleInputChange}
+                  placeholder="your.email@vit.edu"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="subject">Subject *</label>
+                <input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={form.subject}
+                  onChange={handleInputChange}
+                  placeholder="Course or session name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="rating">Rating</label>
+                <select
+                  id="rating"
+                  name="rating"
+                  value={form.rating}
+                  onChange={handleInputChange}
+                >
+                  <option value="5">★★★★★ Excellent</option>
+                  <option value="4">★★★★☆ Good</option>
+                  <option value="3">★★★☆☆ Average</option>
+                  <option value="2">★★☆☆☆ Poor</option>
+                  <option value="1">★☆☆☆☆ Very Poor</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="feedback">Feedback *</label>
+                <textarea
+                  id="feedback"
+                  name="feedback"
+                  value={form.feedback}
+                  onChange={handleInputChange}
+                  placeholder="Share your detailed feedback..."
+                  rows="5"
+                  required
+                ></textarea>
+              </div>
+
+              {error && <div className="error-message">{error}</div>}
+
+              <button type="submit" className="submit-btn">Submit Feedback</button>
+            </form>
+          </div>
+
+          <div className="feedback-list-container">
+            <h2>Submitted Feedback ({feedbackList.length})</h2>
+
+            {feedbackList.length === 0 ? (
+              <p className="no-feedback">No feedback submitted yet.</p>
+            ) : (
+              <div className="feedback-list">
+                {feedbackList.map((item) => (
+                  <div key={item.id} className="feedback-item">
+                    <div className="feedback-header">
+                      <div>
+                        <h4>{item.name}</h4>
+                        <p className="subject">{item.subject}</p>
+                        <p className="email">{item.email}</p>
+                        <p className="rating">Rating: {'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}</p>
+                      </div>
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteFeedback(item.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    <p className="feedback-text">{item.feedback}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<FeedbackApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>

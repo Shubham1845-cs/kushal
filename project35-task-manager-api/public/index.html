@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; margin-bottom: 20px; }
+        .card { background: white; padding: 25px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2 { color: #333; margin-bottom: 15px; border-bottom: 2px solid #ff6600; padding-bottom: 8px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; margin-top: 10px; }
+        input, select, textarea { width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; }
+        textarea { height: 70px; resize: vertical; }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 180px; }
+        .btn { padding: 9px 20px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 14px; margin-top: 12px; }
+        .btn-primary   { background: #ff6600; color: white; }
+        .btn-primary:hover { background: #e55a00; }
+        .btn-secondary { background: #888; color: white; margin-left: 10px; }
+        .success { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 3px; margin-bottom: 12px; border-left: 4px solid #4caf50; display: none; }
+        .error   { background: #ffebee; color: #c62828; padding: 10px; border-radius: 3px; margin-bottom: 12px; border-left: 4px solid #d32f2f; display: none; }
+
+        /* Filter tabs */
+        .filters { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .filter-btn { padding: 6px 16px; border: 1px solid #ddd; border-radius: 3px; background: white; cursor: pointer; font-size: 13px; }
+        .filter-btn.active { background: #ff6600; color: white; border-color: #ff6600; }
+
+        /* Stats */
+        .stats { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat { flex: 1; min-width: 100px; padding: 12px; border-radius: 3px; text-align: center; color: white; font-weight: bold; }
+        .stat-total    { background: #555; }
+        .stat-pending  { background: #ff6600; }
+        .stat-completed{ background: #2e7d32; }
+
+        /* Task list */
+        .task-list { display: flex; flex-direction: column; gap: 10px; }
+        .task-item { background: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .task-item.completed { opacity: 0.7; border-left: 4px solid #2e7d32; }
+        .task-item.pending   { border-left: 4px solid #ff6600; }
+        .task-info { flex: 1; }
+        .task-info h3 { color: #333; margin-bottom: 4px; font-size: 15px; }
+        .task-info p  { color: #666; font-size: 13px; margin-bottom: 4px; }
+        .task-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; }
+        .badge-pending   { background: #fff3e0; color: #e65100; }
+        .badge-completed { background: #e8f5e9; color: #2e7d32; }
+        .badge-high   { background: #ffebee; color: #c62828; }
+        .badge-medium { background: #fff8e1; color: #f57f17; }
+        .badge-low    { background: #e8f5e9; color: #2e7d32; }
+        .task-actions { display: flex; flex-direction: column; gap: 6px; }
+        .btn-complete { padding: 5px 12px; background: #2e7d32; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .btn-pending  { padding: 5px 12px; background: #ff6600; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .btn-edit     { padding: 5px 12px; background: #1565c0; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .btn-delete   { padding: 5px 12px; background: #c62828; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .empty { text-align: center; padding: 30px; color: #888; }
+        .edit-mode { border-left: 4px solid #1565c0; }
+
+        @media(max-width:600px) { .task-item { flex-direction: column; } .task-actions { flex-direction: row; flex-wrap: wrap; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Task Manager</h1>
+
+    <!-- Add / Edit Form -->
+    <div class="card" id="formCard">
+        <h2 id="formTitle">Add New Task</h2>
+        <div id="successMsg" class="success"></div>
+        <div id="errorMsg"   class="error"></div>
+
+        <input type="hidden" id="taskId">
+
+        <div class="row">
+            <div>
+                <label>Title *</label>
+                <input type="text" id="title" placeholder="Enter task title">
+            </div>
+            <div>
+                <label>Priority</label>
+                <select id="priority">
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Description</label>
+        <textarea id="description" placeholder="Enter task description (optional)"></textarea>
+
+        <button class="btn btn-primary" onclick="saveTask()">Add Task</button>
+        <button class="btn btn-secondary" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats" id="statsBar">
+        <div class="stat stat-total">Total: <span id="statTotal">0</span></div>
+        <div class="stat stat-pending">Pending: <span id="statPending">0</span></div>
+        <div class="stat stat-completed">Completed: <span id="statCompleted">0</span></div>
+    </div>
+
+    <!-- Task List -->
+    <div class="card">
+        <h2>Tasks</h2>
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="loadTasks('all', this)">All</button>
+            <button class="filter-btn" onclick="loadTasks('pending', this)">Pending</button>
+            <button class="filter-btn" onclick="loadTasks('completed', this)">Completed</button>
+        </div>
+
+        <div id="taskList" class="task-list">
+            <p class="empty">Loading...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:5001/api/tasks';
+
+    function showMsg(type, msg) {
+        const el    = document.getElementById(type === 'success' ? 'successMsg' : 'errorMsg');
+        const other = document.getElementById(type === 'success' ? 'errorMsg' : 'successMsg');
+        el.textContent   = msg;
+        el.style.display = 'block';
+        other.style.display = 'none';
+        setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    function loadTasks(filter, btn) {
+        // Update active filter button
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const url = filter === 'all' ? API : API + '?status=' + filter;
+
+        fetch(API)
+            .then(r => r.json())
+            .then(res => {
+                document.getElementById('statTotal').textContent     = res.total;
+                document.getElementById('statPending').textContent   = res.pending;
+                document.getElementById('statCompleted').textContent = res.completed;
+            });
+
+        fetch(url)
+            .then(r => r.json())
+            .then(res => {
+                const list = document.getElementById('taskList');
+                if (res.data.length === 0) {
+                    list.innerHTML = '<p class="empty">No tasks found.</p>';
+                    return;
+                }
+                list.innerHTML = res.data.map(t => `
+                    <div class="task-item ${t.status}">
+                        <div class="task-info">
+                            <h3 style="${t.status === 'completed' ? 'text-decoration:line-through;' : ''}">${t.title}</h3>
+                            ${t.description ? `<p>${t.description}</p>` : ''}
+                            <div class="task-meta">
+                                <span class="badge badge-${t.status}">${t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span>
+                                <span class="badge badge-${t.priority}">Priority: ${t.priority.charAt(0).toUpperCase() + t.priority.slice(1)}</span>
+                                <span style="font-size:11px;color:#999;">ID: #${t.id}</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            ${t.status === 'pending'
+                                ? `<button class="btn-complete" onclick="updateStatus(${t.id}, 'completed')">Mark Complete</button>`
+                                : `<button class="btn-pending"  onclick="updateStatus(${t.id}, 'pending')">Mark Pending</button>`
+                            }
+                            <button class="btn-edit"   onclick="editTask(${t.id})">Edit</button>
+                            <button class="btn-delete" onclick="deleteTask(${t.id})">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            })
+            .catch(err => showMsg('error', 'Failed to load tasks: ' + err.message));
+    }
+
+    function saveTask() {
+        const id          = document.getElementById('taskId').value;
+        const title       = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const priority    = document.getElementById('priority').value;
+
+        if (!title) { showMsg('error', 'Title is required.'); return; }
+
+        const method = id ? 'PUT' : 'POST';
+        const url    = id ? API + '/' + id : API;
+
+        fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, priority })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) throw new Error(res.message);
+            showMsg('success', res.message);
+            cancelEdit();
+            loadTasks('all', document.querySelector('.filter-btn'));
+        })
+        .catch(err => showMsg('error', 'Error: ' + err.message));
+    }
+
+    function updateStatus(id, status) {
+        fetch(API + '/' + id + '/status', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        })
+        .then(r => r.json())
+        .then(res => {
+            showMsg('success', res.message);
+            loadTasks('all', document.querySelector('.filter-btn.active'));
+        })
+        .catch(err => showMsg('error', 'Error: ' + err.message));
+    }
+
+    function editTask(id) {
+        fetch(API + '/' + id)
+            .then(r => r.json())
+            .then(res => {
+                const t = res.data;
+                document.getElementById('taskId').value       = t.id;
+                document.getElementById('title').value        = t.title;
+                document.getElementById('description').value  = t.description;
+                document.getElementById('priority').value     = t.priority;
+                document.getElementById('formTitle').textContent = 'Edit Task';
+                document.getElementById('formCard').classList.add('edit-mode');
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                document.querySelector('#formCard .btn-primary').textContent = 'Update Task';
+                window.scrollTo(0, 0);
+            });
+    }
+
+    function deleteTask(id) {
+        if (!confirm('Delete this task?')) return;
+        fetch(API + '/' + id, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(res => {
+                showMsg('success', res.message);
+                loadTasks('all', document.querySelector('.filter-btn.active'));
+            })
+            .catch(err => showMsg('error', 'Error: ' + err.message));
+    }
+
+    function cancelEdit() {
+        document.getElementById('taskId').value      = '';
+        document.getElementById('title').value       = '';
+        document.getElementById('description').value = '';
+        document.getElementById('priority').value    = 'medium';
+        document.getElementById('formTitle').textContent = 'Add New Task';
+        document.getElementById('formCard').classList.remove('edit-mode');
+        document.getElementById('cancelBtn').style.display = 'none';
+        document.querySelector('#formCard .btn-primary').textContent = 'Add Task';
+    }
+
+    window.onload = () => loadTasks('all', document.querySelector('.filter-btn'));
+</script>
+</body>
+</html>

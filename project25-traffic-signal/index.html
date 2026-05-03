@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Signal</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        h1 { margin-bottom: 10px; }
+        button { padding: 8px 18px; margin: 4px; cursor: pointer; font-weight: bold; }
+        p { margin: 10px 0; font-weight: bold; font-size: 16px; }
+        .signals { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin: 20px 0; }
+        .signal-wrapper { text-align: center; }
+        .signal-box { width: 70px; background: #222; border-radius: 8px; padding: 8px; display: inline-block; }
+        .pole { width: 6px; height: 50px; background: #555; margin: 0 auto; }
+        .led { width: 45px; height: 45px; border-radius: 50%; margin: 5px auto; border: 2px solid #333; }
+        .led-red    { background: #4a0000; }
+        .led-yellow { background: #3a3000; }
+        .led-green  { background: #003a00; }
+        .led-red.on    { background: #ff0000; box-shadow: 0 0 14px 5px rgba(255,0,0,0.8); }
+        .led-yellow.on { background: #ffcc00; box-shadow: 0 0 14px 5px rgba(255,204,0,0.8); }
+        .led-green.on  { background: #00cc00; box-shadow: 0 0 14px 5px rgba(0,204,0,0.8); }
+        table { margin: 0 auto; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px 14px; text-align: left; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+    <h1>Traffic Signal System</h1>
+
+    <div>
+        <button onclick="setSignal('red')"    style="background:#cc0000;color:white;">Red</button>
+        <button onclick="setSignal('yellow')" style="background:#cc9900;color:white;">Yellow</button>
+        <button onclick="setSignal('green')"  style="background:#007700;color:white;">Green</button>
+        <button onclick="startAuto()"         style="background:#0066cc;color:white;">Auto Mode</button>
+        <button onclick="stopAuto()"          style="background:#555;color:white;">Stop Auto</button>
+    </div>
+
+    <p>Current: <span id="statusText">RED - STOP</span> &nbsp;|&nbsp; Next change in: <span id="countdown">--</span> sec</p>
+
+    <div class="signals">
+        <div class="signal-wrapper">
+            <b>North</b><br>
+            <div class="signal-box">
+                <div class="led led-red"    id="north-red"></div>
+                <div class="led led-yellow" id="north-yellow"></div>
+                <div class="led led-green"  id="north-green"></div>
+            </div>
+            <div class="pole"></div>
+        </div>
+        <div class="signal-wrapper">
+            <b>East</b><br>
+            <div class="signal-box">
+                <div class="led led-red"    id="east-red"></div>
+                <div class="led led-yellow" id="east-yellow"></div>
+                <div class="led led-green"  id="east-green"></div>
+            </div>
+            <div class="pole"></div>
+        </div>
+        <div class="signal-wrapper">
+            <b>South</b><br>
+            <div class="signal-box">
+                <div class="led led-red"    id="south-red"></div>
+                <div class="led led-yellow" id="south-yellow"></div>
+                <div class="led led-green"  id="south-green"></div>
+            </div>
+            <div class="pole"></div>
+        </div>
+        <div class="signal-wrapper">
+            <b>West</b><br>
+            <div class="signal-box">
+                <div class="led led-red"    id="west-red"></div>
+                <div class="led led-yellow" id="west-yellow"></div>
+                <div class="led led-green"  id="west-green"></div>
+            </div>
+            <div class="pole"></div>
+        </div>
+    </div>
+
+    <table>
+        <tr><th>Signal</th><th>Meaning</th></tr>
+        <tr><td>Red</td><td>STOP - Do not proceed</td></tr>
+        <tr><td>Yellow</td><td>CAUTION - Prepare to stop or go</td></tr>
+        <tr><td>Green</td><td>GO - Proceed safely</td></tr>
+    </table>
+
+    <script>
+        var dirs   = ['north','east','south','west'];
+        var cols   = ['red','yellow','green'];
+        var msgs   = { red:'RED - STOP', yellow:'YELLOW - CAUTION', green:'GREEN - GO' };
+        var durations = { red:10, yellow:3, green:10 };
+        var sequence  = ['red','yellow','green','yellow'];
+        var seqIndex  = 0;
+        var autoTimer = null;
+        var countdownTimer = null;
+
+        function setSignal(color) {
+            dirs.forEach(function(d) {
+                cols.forEach(function(c) {
+                    document.getElementById(d+'-'+c).classList.remove('on');
+                });
+                document.getElementById(d+'-'+color).classList.add('on');
+            });
+            document.getElementById('statusText').textContent = msgs[color];
+        }
+
+        function startCountdown(seconds) {
+            clearInterval(countdownTimer);
+            var t = seconds;
+            document.getElementById('countdown').textContent = t;
+            countdownTimer = setInterval(function() {
+                t--;
+                document.getElementById('countdown').textContent = t;
+                if (t <= 0) clearInterval(countdownTimer);
+            }, 1000);
+        }
+
+        function startAuto() {
+            stopAuto();
+            function cycle() {
+                var color = sequence[seqIndex % sequence.length];
+                setSignal(color);
+                startCountdown(durations[color]);
+                seqIndex++;
+                autoTimer = setTimeout(cycle, durations[color] * 1000);
+            }
+            cycle();
+        }
+
+        function stopAuto() {
+            clearTimeout(autoTimer);
+            clearInterval(countdownTimer);
+            autoTimer = null;
+            document.getElementById('countdown').textContent = '--';
+        }
+
+        setSignal('red');
+    </script>
+</body>
+</html>

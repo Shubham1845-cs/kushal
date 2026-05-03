@@ -1,0 +1,119 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #f5f9fc, #e3eef7);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 0 16px;
+}
+
+.calculator-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 1.8rem;
+  color: #1f3c88;
+}
+
+.subtitle {
+  color: #6a7786;
+  margin: 0 0 20px;
+}
+
+.bill-form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: bold;
+  color: #333;
+}
+
+input {
+  padding: 12px;
+  border: 1px solid #cfd9e5;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+button {
+  padding: 12px 24px;
+  background: #2055d6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #1945ae;
+}
+
+.rates-info {
+  background: #f0f4f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.rates-info h3 {
+  margin: 0 0 10px;
+  color: #1f3c88;
+}
+
+.rates-info ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rates-info li {
+  padding: 6px 0;
+  color: #5a6b7a;
+}
+
+.result {
+  background: #eef3ff;
+  border: 1px solid #d9e2ff;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.bill-details {
+  margin-bottom: 12px;
+}
+
+.bill-details p {
+  margin: 6px 0;
+  color: #333;
+}
+
+.result h2 {
+  margin: 12px 0 0;
+  color: #2055d6;
+  font-size: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .calculator-card {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+}

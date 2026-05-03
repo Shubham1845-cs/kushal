@@ -1,0 +1,90 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem 2 - Tabs</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container py-5">
+    <div class="text-center mb-4">
+      <h1 class="font-weight-bold">courseprofile</h1>
+      <p class="text-muted mb-0">Shubham Gaikwad — Full Stack Developer. Showcase of academic projects organized by category.</p>
+    </div>
+
+    <ul class="nav nav-pills justify-content-center mb-4" id="activityTabs">
+      <li class="nav-item"><a class="nav-link active tab-link" href="#sdp">SDP</a></li>
+      <li class="nav-item"><a class="nav-link tab-link" href="#edi">EDI</a></li>
+      <li class="nav-item"><a class="nav-link tab-link" href="#dt">DT</a></li>
+      <li class="nav-item"><a class="nav-link tab-link" href="#cp">Course Projects</a></li>
+    </ul>
+
+    <div class="tab-panel active" id="sdp">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h3>SDP (Software Development Projects)</h3>
+          <p class="mb-2">Projects built using modern software development methodologies:</p>
+          <h5>Excel Analytics Platform (June 2025)</h5>
+          <p class="mb-1"><strong>Tech:</strong> React, TailwindCSS, Node.js, Express.js, MongoDB</p>
+          <p class="mb-1">Features: Dynamic X/Y dropdowns with Chart.js visuals, JWT-secured access with role-based permissions, responsive design with login persistence.</p>
+          <h5 class="mt-3">Federated Healthcare Learning Platform</h5>
+          <p class="mb-1"><strong>Tech:</strong> Python, TensorFlow, Flower FL, FastAPI, Uvicorn</p>
+          <p class="mb-0">Production-ready federated learning system for collaborative ML model training focused on disease prediction with privacy and compliance considerations.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="edi">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h3>EDI (Engineering Design & Innovation)</h3>
+          <p class="mb-2">Healthcare and ML-focused projects:</p>
+          <h5>Medical Pill Dispenser</h5>
+          <p class="mb-1"><strong>Tech:</strong> IoT, Servo Motors, Mobile App, Embedded Systems</p>
+          <p class="mb-1">Automated medication management with alarm reminders and caregiver monitoring app.</p>
+          <h5 class="mt-3">DAS-ReLU CNN Framework</h5>
+          <p class="mb-1"><strong>Tech:</strong> Python, Deep Learning, CNN, Medical Imaging</p>
+          <p class="mb-0">Custom CNN with Dynamic Activation Scaling ReLU for medical X-Ray fracture classification (achieved 97.83% accuracy).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="dt">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h3>DT (Design Thinking - Research & Publications)</h3>
+          <p class="mb-2">Publication and evaluation notes:</p>
+          <h5>ICDSA 2025 Publication (Grade: A+)</h5>
+          <p class="mb-1">Title: "Intelligent Hand Gesture Recognition Using Convolutional Neural Networks for Wireless Robotic Vehicle Control"</p>
+          <p class="mb-1">Publisher: Springer International Publishing (LNNS Vol. 1725) — Scopus Indexed</p>
+          <p class="mb-0"><strong>Evaluation Criteria:</strong> A+ = Scopus Publication; A = Conference Presentation; B = Not Listed in UGC Journal; C = Google Scholar; D = Nothing</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="cp">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h3>Course Projects</h3>
+          <p class="mb-2">Academic projects demonstrating theoretical and practical skills:</p>
+          <h5>DBMS - WorkBridge (Database Management)</h5>
+          <p class="mb-1"><strong>Tech:</strong> MySQL, Spring Boot, React.js — Freelance marketplace platform</p>
+          <h5 class="mt-3">Data Science - Fraud Detection (ML Project)</h5>
+          <p class="mb-1"><strong>Tech:</strong> Python, Scikit-learn, NLP — Fraudulent call detection</p>
+          <h5 class="mt-3">IoT - Miner Safety Helmet</h5>
+          <p class="mb-1"><strong>Tech:</strong> ESP32, Sensors, Zigbee — Gas & temperature monitoring</p>
+          <h5 class="mt-3">SentriWeb (Privacy Surveillance Extension)</h5>
+          <p class="mb-0"><strong>Tech:</strong> Chrome Extension, Manifest V3, JavaScript — Web tracking detection with privacy risk scoring (0-100)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

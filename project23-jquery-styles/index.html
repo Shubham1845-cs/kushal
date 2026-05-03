@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jQuery Style Switcher</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        /* Default Style */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; transition: none; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 25px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 20px; text-align: center; }
+
+        /* Style buttons */
+        .style-btns { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .style-btn { padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        #btn1 { background: #0066cc; color: white; }
+        #btn2 { background: #2e7d32; color: white; }
+        #btn3 { background: #c62828; color: white; }
+
+        /* Form elements */
+        .form-section { margin-bottom: 20px; }
+        h2 { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; }
+        input[type="text"], input[type="email"], select, textarea {
+            width: 100%; padding: 9px; border: 1px solid #ddd;
+            border-radius: 3px; font-size: 14px; margin-bottom: 12px;
+        }
+        textarea { height: 80px; }
+        button.submit-btn { padding: 10px 20px; background: #333; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        p.sample-text { margin: 10px 0; line-height: 1.6; }
+        .sample-box { padding: 15px; border: 1px solid #ddd; border-radius: 3px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+<div class="container" id="mainContainer">
+    <h1 id="mainTitle">jQuery Style Switcher</h1>
+
+    <div class="style-btns">
+        <button class="style-btn" id="btn1">Style 1 - Blue Theme</button>
+        <button class="style-btn" id="btn2">Style 2 - Green Theme</button>
+        <button class="style-btn" id="btn3">Style 3 - Dark Theme</button>
+    </div>
+
+    <div class="form-section">
+        <h2 id="formTitle">Sample Form</h2>
+
+        <label>Full Name</label>
+        <input type="text" placeholder="Enter your name" class="form-control">
+
+        <label>Email</label>
+        <input type="email" placeholder="Enter your email" class="form-control">
+
+        <label>Course</label>
+        <select class="form-control">
+            <option>Computer Science</option>
+            <option>Information Technology</option>
+            <option>Electronics</option>
+        </select>
+
+        <label>Message</label>
+        <textarea class="form-control" placeholder="Enter your message"></textarea>
+
+        <button class="submit-btn">Submit</button>
+    </div>
+
+    <div class="sample-box" id="sampleBox">
+        <p class="sample-text">This is a sample paragraph. The style of this entire page changes when you click one of the three buttons above. Each button applies a different theme to all controls on the page including headings, inputs, buttons, and background.</p>
+    </div>
+</div>
+
+<script>
+    // Style 1 - Blue Theme
+    $('#btn1').click(function() {
+        $('body').css({ background: '#e3f2fd', fontFamily: 'Arial, sans-serif' });
+        $('.container').css({ background: '#ffffff', border: '2px solid #0066cc', borderRadius: '5px' });
+        $('h1, h2').css({ color: '#0066cc' });
+        $('input, select, textarea').css({ background: '#e8f4ff', border: '1px solid #0066cc', color: '#333', borderRadius: '3px' });
+        $('label').css({ color: '#0066cc' });
+        $('.submit-btn').css({ background: '#0066cc', color: 'white' });
+        $('.sample-box').css({ background: '#e8f4ff', border: '1px solid #0066cc' });
+        $('p').css({ color: '#333' });
+    });
+
+    // Style 2 - Green Theme
+    $('#btn2').click(function() {
+        $('body').css({ background: '#e8f5e9', fontFamily: 'Georgia, serif' });
+        $('.container').css({ background: '#ffffff', border: '2px solid #2e7d32', borderRadius: '5px' });
+        $('h1, h2').css({ color: '#2e7d32' });
+        $('input, select, textarea').css({ background: '#f1f8e9', border: '1px solid #2e7d32', color: '#333', borderRadius: '3px' });
+        $('label').css({ color: '#2e7d32' });
+        $('.submit-btn').css({ background: '#2e7d32', color: 'white' });
+        $('.sample-box').css({ background: '#f1f8e9', border: '1px solid #2e7d32' });
+        $('p').css({ color: '#333' });
+    });
+
+    // Style 3 - Dark Theme
+    $('#btn3').click(function() {
+        $('body').css({ background: '#212121', fontFamily: '"Courier New", monospace' });
+        $('.container').css({ background: '#333333', border: '2px solid #555', borderRadius: '5px' });
+        $('h1, h2').css({ color: '#ff5252' });
+        $('input, select, textarea').css({ background: '#444', border: '1px solid #666', color: '#fff', borderRadius: '3px' });
+        $('label').css({ color: '#ccc' });
+        $('.submit-btn').css({ background: '#ff5252', color: 'white' });
+        $('.sample-box').css({ background: '#444', border: '1px solid #666' });
+        $('p').css({ color: '#ccc' });
+    });
+</script>
+</body>
+</html>

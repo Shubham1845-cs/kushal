@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem 7 - VIT Semester Result</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function ResultApp() {
+      const subjects = ['Engineering Mathematics', 'Physics', 'Data Structures', 'Web Technology'];
+
+      const [studentName, setStudentName] = useState('Arjun Kumar');
+      const [course, setCourse] = useState('B.Tech CSE - Semester 6');
+      const [marks, setMarks] = useState({
+        'Engineering Mathematics': { mse: 0, ese: 0 },
+        'Physics': { mse: 0, ese: 0 },
+        'Data Structures': { mse: 0, ese: 0 },
+        'Web Technology': { mse: 0, ese: 0 },
+      });
+
+      const [savedMessage, setSavedMessage] = useState('');
+
+      // Calculate grade based on percentage
+      const getGrade = (percentage) => {
+        if (percentage >= 90) return 'A+';
+        if (percentage >= 80) return 'A';
+        if (percentage >= 70) return 'B+';
+        if (percentage >= 60) return 'B';
+        if (percentage >= 50) return 'C+';
+        if (percentage >= 40) return 'C';
+        return 'D';
+      };
+
+      // Get status badge class
+      const getStatusClass = (grade) => {
+        if (grade === 'A+' || grade === 'A') return 'grade-a';
+        if (grade === 'B+' || grade === 'B') return 'grade-b';
+        if (grade === 'C+' || grade === 'C') return 'grade-c';
+        return 'grade-d';
+      };
+
+      // Handle mark changes
+      const handleMarkChange = (subject, type, value) => {
+        setMarks({
+          ...marks,
+          [subject]: {
+            ...marks[subject],
+            [type]: parseFloat(value) || 0,
+          },
+        });
+      };
+
+      // Calculate totals
+      const calculateSubjectTotal = (mse, ese) => {
+        return mse + ese;
+      };
+
+      const calculatePercentage = (total) => {
+        return (total / 100) * 100;
+      };
+
+      // Calculate grand totals
+      let grandTotal = 0;
+      let subjectsCount = 0;
+      let passCount = 0;
+
+      subjects.forEach((subject) => {
+        const total = calculateSubjectTotal(marks[subject].mse, marks[subject].ese);
+        grandTotal += total;
+        subjectsCount++;
+        if (total >= 40) passCount++;
+      });
+
+      const grandPercentage = (grandTotal / (subjectsCount * 100)) * 100;
+      const overallGrade = getGrade(grandPercentage);
+
+      // Save to MySQL
+      const handleSaveResult = async () => {
+        const resultData = {
+          studentName,
+          course,
+          marks,
+          grandTotal,
+          grandPercentage,
+          overallGrade,
+        };
+
+        try {
+          const response = await fetch('save.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(resultData),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            setSavedMessage('Result saved to MySQL successfully!');
+            setTimeout(() => setSavedMessage(''), 3000);
+          } else {
+            setSavedMessage('Error: ' + (result.message || 'Failed to save.'));
+          }
+        } catch (error) {
+          setSavedMessage('Error: ' + error.message);
+        }
+      };
+
+      return (
+        <div className="app">
+          <div className="header">
+            <h1>React + PHP + MySQL Result Preparation</h1>
+            <p className="subtitle">Enter MSE and ESE marks for four subjects. The UI updates pass/fail status instantly.</p>
+          </div>
+
+          <div className="student-details">
+            <h2>Student Details</h2>
+            <div className="details-row">
+              <div className="detail-item">
+                <label>Name:</label>
+                <input
+                  type="text"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                />
+              </div>
+              <div className="detail-item">
+                <label>Course:</label>
+                <input
+                  type="text"
+                  value={course}
+                  onChange={(e) => setCourse(e.target.value)}
+                />
+              </div>
+              <div className="detail-item">
+                <label>Subjects Updated:</label>
+                <span className="count">{subjectsCount}/4</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="marks-section">
+            <h2>Semester Marks (MSE 30 + ESE 70)</h2>
+            <table className="marks-table">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>MSE (30)</th>
+                  <th>ESE (70)</th>
+                  <th>Total (100)</th>
+                  <th>Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subjects.map((subject) => {
+                  const total = calculateSubjectTotal(marks[subject].mse, marks[subject].ese);
+                  const percentage = calculatePercentage(total);
+                  const grade = getGrade(percentage);
+
+                  return (
+                    <tr key={subject}>
+                      <td className="subject-name">{subject}</td>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          max="30"
+                          value={marks[subject].mse}
+                          onChange={(e) => handleMarkChange(subject, 'mse', e.target.value)}
+                          placeholder="0-30"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          max="70"
+                          value={marks[subject].ese}
+                          onChange={(e) => handleMarkChange(subject, 'ese', e.target.value)}
+                          placeholder="0-70"
+                        />
+                      </td>
+                      <td className="total">{total}</td>
+                      <td className={`grade ${getStatusClass(grade)}`}>{grade}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="summary">
+              <div className="summary-item">
+                <strong>Grand Total:</strong> {grandTotal} / 400
+              </div>
+              <div className="summary-item">
+                <strong>Percentage:</strong> {grandPercentage.toFixed(2)}%
+              </div>
+              <div className={`summary-item overall ${getStatusClass(overallGrade)}`}>
+                <strong>Overall Result:</strong> {overallGrade}
+              </div>
+            </div>
+
+            {savedMessage && <div className="message">{savedMessage}</div>}
+
+            <button className="save-btn" onClick={handleSaveResult}>
+              Save Result to MySQL
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<ResultApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>

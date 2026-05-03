@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem 3 - Array Operations</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Array Operations</h1>
+    <p>Enter numbers separated by commas. Example: 5, 1, 9, 3</p>
+
+    <label>Array Values</label>
+    <input type="text" id="arrayInput" value="5, 1, 9, 3, 7" />
+
+    <div class="button-row">
+      <button onclick="showReverse()">Reverse</button>
+      <button onclick="showAscending()">Sort Asc</button>
+      <button onclick="showDescending()">Sort Desc</button>
+      <button onclick="searchValue()">Search</button>
+    </div>
+
+    <label>Search Value</label>
+    <input type="number" id="searchInput" value="9" />
+
+    <div class="result-box" id="resultBox">Result will appear here.</div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Management System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; margin-bottom: 20px; }
+        .card { background: white; padding: 25px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2 { color: #333; margin-bottom: 15px; border-bottom: 2px solid #5c35a0; padding-bottom: 8px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; margin-top: 10px; }
+        input, select, textarea { width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; }
+        textarea { height: 100px; resize: vertical; }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 180px; }
+        .btn { padding: 9px 20px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 14px; margin-top: 12px; }
+        .btn-primary   { background: #5c35a0; color: white; }
+        .btn-secondary { background: #888; color: white; margin-left: 10px; }
+        .btn-edit      { padding: 5px 12px; background: #ff9800; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .btn-delete    { padding: 5px 12px; background: #d32f2f; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 5px; }
+        .success { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 3px; margin-bottom: 12px; border-left: 4px solid #4caf50; display: none; }
+        .error   { background: #ffebee; color: #c62828; padding: 10px; border-radius: 3px; margin-bottom: 12px; border-left: 4px solid #d32f2f; display: none; }
+        .blog-list { display: flex; flex-direction: column; gap: 15px; }
+        .blog-item { background: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; padding: 15px; }
+        .blog-item h3 { color: #333; margin-bottom: 6px; }
+        .blog-meta { font-size: 12px; color: #888; margin-bottom: 8px; }
+        .blog-content { font-size: 14px; color: #555; margin-bottom: 10px; line-height: 1.5; }
+        .blog-category { display: inline-block; padding: 2px 8px; background: #e8e0f5; color: #5c35a0; border-radius: 3px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+        .edit-mode { border-left: 4px solid #ff9800; }
+        .empty { text-align: center; padding: 30px; color: #888; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Blog Management System</h1>
+
+    <!-- Add / Edit Form -->
+    <div class="card" id="formCard">
+        <h2 id="formTitle">Create New Blog Post</h2>
+        <div id="successMsg" class="success"></div>
+        <div id="errorMsg"   class="error"></div>
+
+        <input type="hidden" id="blogId">
+
+        <div class="row">
+            <div>
+                <label>Title *</label>
+                <input type="text" id="title" placeholder="Enter blog title">
+            </div>
+            <div>
+                <label>Author *</label>
+                <input type="text" id="author" placeholder="Enter author name">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <label>Category</label>
+                <select id="category">
+                    <option value="General">General</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="Node.js">Node.js</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Content *</label>
+        <textarea id="content" placeholder="Write your blog content here..."></textarea>
+
+        <button class="btn btn-primary" onclick="saveBlog()">Publish Blog</button>
+        <button class="btn btn-secondary" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+    </div>
+
+    <!-- Blog List -->
+    <div class="card">
+        <h2>All Blog Posts (<span id="blogCount">0</span>)</h2>
+        <div id="blogList" class="blog-list">
+            <p class="empty">Loading...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:5000/api/blogs';
+
+    function showMsg(type, msg) {
+        const el    = document.getElementById(type === 'success' ? 'successMsg' : 'errorMsg');
+        const other = document.getElementById(type === 'success' ? 'errorMsg' : 'successMsg');
+        el.textContent    = msg;
+        el.style.display  = 'block';
+        other.style.display = 'none';
+        setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    function loadBlogs() {
+        fetch(API)
+            .then(r => r.json())
+            .then(res => {
+                document.getElementById('blogCount').textContent = res.count;
+                const list = document.getElementById('blogList');
+                if (res.data.length === 0) {
+                    list.innerHTML = '<p class="empty">No blog posts yet. Create one above.</p>';
+                    return;
+                }
+                list.innerHTML = res.data.map(b => `
+                    <div class="blog-item">
+                        <span class="blog-category">${b.category}</span>
+                        <h3>${b.title}</h3>
+                        <p class="blog-meta">By <strong>${b.author}</strong> &nbsp;|&nbsp; ${new Date(b.createdAt).toLocaleDateString()} &nbsp;|&nbsp; ID: #${b.id}</p>
+                        <p class="blog-content">${b.content}</p>
+                        <button class="btn-edit"   onclick="editBlog(${b.id})">Edit</button>
+                        <button class="btn-delete" onclick="deleteBlog(${b.id})">Delete</button>
+                    </div>
+                `).join('');
+            })
+            .catch(err => showMsg('error', 'Failed to load blogs: ' + err.message));
+    }
+
+    function saveBlog() {
+        const id      = document.getElementById('blogId').value;
+        const title   = document.getElementById('title').value.trim();
+        const author  = document.getElementById('author').value.trim();
+        const content = document.getElementById('content').value.trim();
+        const category= document.getElementById('category').value;
+
+        if (!title || !author || !content) {
+            showMsg('error', 'Title, Author and Content are required.');
+            return;
+        }
+
+        const method = id ? 'PUT' : 'POST';
+        const url    = id ? API + '/' + id : API;
+
+        fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, author, content, category })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) throw new Error(res.message);
+            showMsg('success', res.message);
+            cancelEdit();
+            loadBlogs();
+        })
+        .catch(err => showMsg('error', 'Error: ' + err.message));
+    }
+
+    function editBlog(id) {
+        fetch(API + '/' + id)
+            .then(r => r.json())
+            .then(res => {
+                const b = res.data;
+                document.getElementById('blogId').value    = b.id;
+                document.getElementById('title').value     = b.title;
+                document.getElementById('author').value    = b.author;
+                document.getElementById('content').value   = b.content;
+                document.getElementById('category').value  = b.category;
+                document.getElementById('formTitle').textContent = 'Edit Blog Post';
+                document.getElementById('formCard').classList.add('edit-mode');
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                document.querySelector('#formCard .btn-primary').textContent = 'Update Blog';
+                window.scrollTo(0, 0);
+            });
+    }
+
+    function cancelEdit() {
+        document.getElementById('blogId').value   = '';
+        document.getElementById('title').value    = '';
+        document.getElementById('author').value   = '';
+        document.getElementById('content').value  = '';
+        document.getElementById('category').value = 'General';
+        document.getElementById('formTitle').textContent = 'Create New Blog Post';
+        document.getElementById('formCard').classList.remove('edit-mode');
+        document.getElementById('cancelBtn').style.display = 'none';
+        document.querySelector('#formCard .btn-primary').textContent = 'Publish Blog';
+    }
+
+    function deleteBlog(id) {
+        if (!confirm('Delete this blog post?')) return;
+        fetch(API + '/' + id, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(res => {
+                showMsg('success', res.message);
+                loadBlogs();
+            })
+            .catch(err => showMsg('error', 'Error: ' + err.message));
+    }
+
+    window.onload = loadBlogs;
+</script>
+</body>
+</html>

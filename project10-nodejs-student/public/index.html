@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
+        .form-section { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ddd; }
+        label { display: block; margin: 8px 0 3px; font-weight: bold; color: #333; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 3px; }
+        button { padding: 10px 15px; margin: 5px 5px 5px 0; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: #28a745; color: white; }
+        .btn-primary:hover { background: #218838; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-warning:hover { background: #e0a800; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #28a745; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍🎓 Student Registration System</h1>
+
+        <div id="message"></div>
+
+        <div class="form-section">
+            <h2>Register New Student</h2>
+            <input type="hidden" id="studentId">
+            <label>Full Name:</label>
+            <input type="text" id="name" placeholder="Enter full name">
+            
+            <label>Email:</label>
+            <input type="email" id="email" placeholder="Enter email address">
+            
+            <label>Course:</label>
+            <input type="text" id="course" placeholder="Enter course name">
+            
+            <button class="btn-primary" onclick="saveStudent()">Register Student</button>
+            <button class="btn-warning" onclick="clearForm()">Clear</button>
+        </div>
+
+        <h2>Registered Students</h2>
+        <table id="studentsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:3000/api/students";
+
+        function showMessage(msg, type) {
+            const msgDiv = document.getElementById("message");
+            msgDiv.textContent = msg;
+            msgDiv.className = "message " + type;
+            setTimeout(() => { msgDiv.textContent = ""; msgDiv.className = ""; }, 3000);
+        }
+
+        function loadAllStudents() {
+            fetch(API_URL)
+                .then(resp => resp.json())
+                .then(data => displayStudents(data))
+                .catch(err => showMessage("Error loading students: " + err.message, "error"));
+        }
+
+        function displayStudents(students) {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+            if (students.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No students registered yet</td></tr>";
+                return;
+            }
+            students.forEach(s => {
+                const date = new Date(s.created_at).toLocaleDateString();
+                const row = `
+                    <tr>
+                        <td>${s.id}</td>
+                        <td>${s.name}</td>
+                        <td>${s.email}</td>
+                        <td>${s.course}</td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="btn-warning" onclick='editStudent(${s.id})'>Edit</button>
+                            <button class="btn-danger" onclick='deleteStudent(${s.id})'>Delete</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function saveStudent() {
+            const id = document.getElementById("studentId").value;
+            const student = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                course: document.getElementById("course").value
+            };
+
+            if (!student.name || !student.email || !student.course) {
+                showMessage("Please fill in all fields", "error");
+                return;
+            }
+
+            const method = id ? "PUT" : "POST";
+            const url = id ? API_URL + "/" + id : API_URL;
+
+            fetch(url, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(student)
+            })
+            .then(resp => {
+                if (!resp.ok) throw new Error("HTTP " + resp.status);
+                return resp.json();
+            })
+            .then(() => {
+                showMessage(id ? "Student updated!" : "Student registered!", "success");
+                clearForm();
+                loadAllStudents();
+            })
+            .catch(err => showMessage("Error: " + err.message, "error"));
+        }
+
+        function editStudent(id) {
+            fetch(API_URL + "/" + id)
+                .then(resp => resp.json())
+                .then(s => {
+                    document.getElementById("studentId").value = s.id;
+                    document.getElementById("name").value = s.name;
+                    document.getElementById("email").value = s.email;
+                    document.getElementById("course").value = s.course;
+                    window.scrollTo(0, 0);
+                })
+                .catch(err => showMessage("Error: " + err.message, "error"));
+        }
+
+        function deleteStudent(id) {
+            if (confirm("Delete this student record?")) {
+                fetch(API_URL + "/" + id, { method: "DELETE" })
+                    .then(() => {
+                        showMessage("Student deleted!", "success");
+                        loadAllStudents();
+                    })
+                    .catch(err => showMessage("Error: " + err.message, "error"));
+            }
+        }
+
+        function clearForm() {
+            document.getElementById("studentId").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("course").value = "";
+        }
+
+        // Students load only when visiting /api/students endpoint
+        // window.onload = loadAllStudents; // disabled auto-load
+    </script>
+</body>
+</html>

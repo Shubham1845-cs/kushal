@@ -1,0 +1,26 @@
+body {
+  background: linear-gradient(135deg, #f8fbff, #e9f0fb);
+  font-family: Arial, sans-serif;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.nav-pills .nav-link {
+  margin: 0 6px 10px;
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: #ffffff;
+  color: #1f3c88;
+  border: 1px solid #cdd8ef;
+}
+
+.nav-pills .nav-link.active {
+  background: #1f3c88;
+  color: #fff;
+}

@@ -1,0 +1,13 @@
+{
+  "name": "blog-api",
+  "version": "1.0.0",
+  "description": "Blog Management REST API using Express.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql": "^2.18.1"
+  }
+}
