@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+        .container { max-width: 960px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; margin-bottom: 20px; }
+        .card { background: white; padding: 25px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2 { color: #333; margin-bottom: 15px; border-bottom: 2px solid #1565c0; padding-bottom: 8px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; margin-top: 10px; }
+        input, select { width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 180px; }
+        .btn { padding: 9px 20px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 14px; margin-top: 12px; }
+        .btn-primary   { background: #1565c0; color: white; }
+        .btn-primary:hover { background: #0d47a1; }
+        .btn-secondary { background: #888; color: white; margin-left: 10px; }
+        .success { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 3px; margin-bottom: 12px; border-left: 4px solid #4caf50; display: none; }
+        .error   { background: #ffebee; color: #c62828; padding: 10px; border-radius: 3px; margin-bottom: 12px; border-left: 4px solid #d32f2f; display: none; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #1565c0; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .badge { padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; }
+        .PENDING   { background: #fff3e0; color: #e65100; }
+        .CONFIRMED { background: #e3f2fd; color: #1565c0; }
+        .SHIPPED   { background: #f3e5f5; color: #6a1b9a; }
+        .DELIVERED { background: #e8f5e9; color: #2e7d32; }
+        .CANCELLED { background: #ffebee; color: #c62828; }
+        .btn-edit   { padding: 4px 10px; background: #ff9800; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .btn-delete { padding: 4px 10px; background: #d32f2f; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 4px; }
+        .edit-mode { border-left: 4px solid #ff9800; }
+        .filters { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .filter-btn { padding: 6px 14px; border: 1px solid #ddd; border-radius: 3px; background: white; cursor: pointer; font-size: 13px; }
+        .filter-btn.active { background: #1565c0; color: white; border-color: #1565c0; }
+        .stats { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat { flex: 1; min-width: 100px; padding: 12px; border-radius: 3px; text-align: center; color: white; font-weight: bold; font-size: 13px; }
+        @media(max-width:600px) { .row > div { min-width: 100%; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Order Management System</h1>
+
+    <!-- Add / Edit Form -->
+    <div class="card" id="formCard">
+        <h2 id="formTitle">Create New Order</h2>
+        <div id="successMsg" class="success"></div>
+        <div id="errorMsg"   class="error"></div>
+        <input type="hidden" id="orderId">
+
+        <div class="row">
+            <div>
+                <label>Customer Name *</label>
+                <input type="text" id="customerName" placeholder="Enter customer name">
+            </div>
+            <div>
+                <label>Customer Email *</label>
+                <input type="email" id="customerEmail" placeholder="Enter customer email">
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label>Product Name *</label>
+                <input type="text" id="productName" placeholder="Enter product name">
+            </div>
+            <div>
+                <label>Quantity *</label>
+                <input type="number" id="quantity" placeholder="Enter quantity" min="1">
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label>Total Price *</label>
+                <input type="number" id="totalPrice" placeholder="Enter total price" min="0" step="0.01">
+            </div>
+            <div>
+                <label>Status</label>
+                <select id="status">
+                    <option value="PENDING">PENDING</option>
+                    <option value="CONFIRMED">CONFIRMED</option>
+                    <option value="SHIPPED">SHIPPED</option>
+                    <option value="DELIVERED">DELIVERED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                </select>
+            </div>
+        </div>
+        <label>Shipping Address *</label>
+        <input type="text" id="shippingAddress" placeholder="Enter shipping address">
+
+        <button class="btn btn-primary" onclick="saveOrder()">Create Order</button>
+        <button class="btn btn-secondary" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats" id="statsBar"></div>
+
+    <!-- Order List -->
+    <div class="card">
+        <h2>All Orders (<span id="orderCount">0</span>)</h2>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterOrders('ALL', this)">All</button>
+            <button class="filter-btn" onclick="filterOrders('PENDING', this)">Pending</button>
+            <button class="filter-btn" onclick="filterOrders('CONFIRMED', this)">Confirmed</button>
+            <button class="filter-btn" onclick="filterOrders('SHIPPED', this)">Shipped</button>
+            <button class="filter-btn" onclick="filterOrders('DELIVERED', this)">Delivered</button>
+            <button class="filter-btn" onclick="filterOrders('CANCELLED', this)">Cancelled</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Address</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="10" style="text-align:center;padding:20px;color:#888;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:8085/api/orders';
+    let allOrders = [];
+
+    function showMsg(type, msg) {
+        const el    = document.getElementById(type === 'success' ? 'successMsg' : 'errorMsg');
+        const other = document.getElementById(type === 'success' ? 'errorMsg' : 'successMsg');
+        el.textContent   = msg;
+        el.style.display = 'block';
+        other.style.display = 'none';
+        setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    function loadOrders() {
+        fetch(API)
+            .then(r => r.json())
+            .then(res => {
+                allOrders = res.data || [];
+                renderStats(allOrders);
+                renderTable(allOrders);
+            })
+            .catch(err => showMsg('error', 'Failed to load orders: ' + err.message));
+    }
+
+    function renderStats(orders) {
+        const counts = { PENDING:0, CONFIRMED:0, SHIPPED:0, DELIVERED:0, CANCELLED:0 };
+        orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+        const colors = { PENDING:'#e65100', CONFIRMED:'#1565c0', SHIPPED:'#6a1b9a', DELIVERED:'#2e7d32', CANCELLED:'#c62828' };
+        document.getElementById('statsBar').innerHTML =
+            Object.entries(counts).map(([s, c]) =>
+                `<div class="stat" style="background:${colors[s]}">${s}: ${c}</div>`
+            ).join('');
+    }
+
+    function renderTable(orders) {
+        document.getElementById('orderCount').textContent = orders.length;
+        const tbody = document.getElementById('tableBody');
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#888;">No orders found</td></tr>';
+            return;
+        }
+        tbody.innerHTML = orders.map(o => `
+            <tr>
+                <td>#${o.id}</td>
+                <td>${o.customerName}</td>
+                <td>${o.customerEmail}</td>
+                <td>${o.productName}</td>
+                <td>${o.quantity}</td>
+                <td>₹${o.totalPrice.toLocaleString()}</td>
+                <td><span class="badge ${o.status}">${o.status}</span></td>
+                <td>${o.shippingAddress}</td>
+                <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
+                <td>
+                    <button class="btn-edit"   onclick="editOrder(${o.id})">Edit</button>
+                    <button class="btn-delete" onclick="deleteOrder(${o.id})">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function filterOrders(status, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filtered = status === 'ALL' ? allOrders : allOrders.filter(o => o.status === status);
+        renderTable(filtered);
+    }
+
+    function saveOrder() {
+        const id              = document.getElementById('orderId').value;
+        const customerName    = document.getElementById('customerName').value.trim();
+        const customerEmail   = document.getElementById('customerEmail').value.trim();
+        const productName     = document.getElementById('productName').value.trim();
+        const quantity        = document.getElementById('quantity').value;
+        const totalPrice      = document.getElementById('totalPrice').value;
+        const status          = document.getElementById('status').value;
+        const shippingAddress = document.getElementById('shippingAddress').value.trim();
+
+        if (!customerName || !customerEmail || !productName || !quantity || !totalPrice || !shippingAddress) {
+            showMsg('error', 'All fields are required.');
+            return;
+        }
+
+        const body = { customerName, customerEmail, productName, quantity: parseInt(quantity), totalPrice: parseFloat(totalPrice), status, shippingAddress };
+        const method = id ? 'PUT' : 'POST';
+        const url    = id ? API + '/' + id : API;
+
+        fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) throw new Error(res.message);
+            showMsg('success', res.message);
+            cancelEdit();
+            loadOrders();
+        })
+        .catch(err => showMsg('error', 'Error: ' + err.message));
+    }
+
+    function editOrder(id) {
+        fetch(API + '/' + id)
+            .then(r => r.json())
+            .then(res => {
+                const o = res.data;
+                document.getElementById('orderId').value         = o.id;
+                document.getElementById('customerName').value    = o.customerName;
+                document.getElementById('customerEmail').value   = o.customerEmail;
+                document.getElementById('productName').value     = o.productName;
+                document.getElementById('quantity').value        = o.quantity;
+                document.getElementById('totalPrice').value      = o.totalPrice;
+                document.getElementById('status').value          = o.status;
+                document.getElementById('shippingAddress').value = o.shippingAddress;
+                document.getElementById('formTitle').textContent = 'Edit Order #' + o.id;
+                document.getElementById('formCard').classList.add('edit-mode');
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                document.querySelector('#formCard .btn-primary').textContent = 'Update Order';
+                window.scrollTo(0, 0);
+            });
+    }
+
+    function deleteOrder(id) {
+        if (!confirm('Delete this order?')) return;
+        fetch(API + '/' + id, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(res => {
+                showMsg('success', res.message);
+                loadOrders();
+            })
+            .catch(err => showMsg('error', 'Error: ' + err.message));
+    }
+
+    function cancelEdit() {
+        document.getElementById('orderId').value         = '';
+        document.getElementById('customerName').value    = '';
+        document.getElementById('customerEmail').value   = '';
+        document.getElementById('productName').value     = '';
+        document.getElementById('quantity').value        = '';
+        document.getElementById('totalPrice').value      = '';
+        document.getElementById('status').value          = 'PENDING';
+        document.getElementById('shippingAddress').value = '';
+        document.getElementById('formTitle').textContent = 'Create New Order';
+        document.getElementById('formCard').classList.remove('edit-mode');
+        document.getElementById('cancelBtn').style.display = 'none';
+        document.querySelector('#formCard .btn-primary').textContent = 'Create Order';
+    }
+
+    window.onload = loadOrders;
+</script>
+</body>
+</html>

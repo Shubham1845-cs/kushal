@@ -1,0 +1,10 @@
+com\example\bookstore\controller\BookController.class
+com\example\bookstore\model\User.class
+com\example\bookstore\service\UserService.class
+com\example\bookstore\config\DataLoader.class
+com\example\bookstore\model\Book.class
+com\example\bookstore\repository\UserRepository.class
+com\example\bookstore\BookstoreApplication.class
+com\example\bookstore\repository\BookRepository.class
+com\example\bookstore\config\SecurityConfig.class
+com\example\bookstore\controller\HomeController.class

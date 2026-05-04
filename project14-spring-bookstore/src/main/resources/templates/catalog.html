@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore - Catalog</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; }
+        nav { background: #333; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        nav a { color: white; text-decoration: none; margin-left: 15px; font-size: 14px; }
+        nav a:hover { text-decoration: underline; }
+        nav .brand { color: white; font-size: 18px; font-weight: bold; }
+        .container { max-width: 960px; margin: 25px auto; padding: 0 20px; }
+        h1 { color: #333; margin-bottom: 15px; }
+        .search-bar { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 0 8px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-bar input, .search-bar select { padding: 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; flex: 1; min-width: 150px; }
+        .search-bar button { padding: 8px 18px; background: #333; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .search-bar button:hover { background: #555; }
+        .books-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+        .book-card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 0 8px rgba(0,0,0,0.1); width: calc(33% - 10px); min-width: 220px; border-left: 4px solid #333; }
+        .book-card h3 { color: #333; margin-bottom: 6px; font-size: 15px; }
+        .book-card p { color: #666; font-size: 13px; margin-bottom: 3px; }
+        .book-card .price { font-weight: bold; color: #333; font-size: 15px; margin-top: 8px; }
+        .book-card .category { display: inline-block; padding: 2px 8px; background: #eee; border-radius: 3px; font-size: 11px; margin-bottom: 6px; }
+        .empty { text-align: center; padding: 40px; color: #888; background: white; border-radius: 5px; }
+        @media(max-width:600px) { .book-card { width: 100%; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <span class="brand">BookStore</span>
+        <div>
+            <a th:href="@{/home}">Home</a>
+            <a th:href="@{/catalog}">Catalog</a>
+            <a th:href="@{/login}">Login</a>
+            <a th:href="@{/register}">Register</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Book Catalog</h1>
+
+        <!-- Search Bar -->
+        <form th:action="@{/catalog}" method="get" class="search-bar">
+            <input type="text" name="search" th:value="${search}" placeholder="Search by title...">
+            <input type="text" name="category" th:value="${category}" placeholder="Filter by category...">
+            <button type="submit">Search</button>
+            <a th:href="@{/catalog}" style="padding:8px 14px;background:#888;color:white;text-decoration:none;border-radius:3px;font-size:14px;">Clear</a>
+        </form>
+
+        <!-- Books Grid -->
+        <div class="books-grid" th:if="${not #lists.isEmpty(books)}">
+            <div class="book-card" th:each="book : ${books}">
+                <span class="category" th:text="${book.category}"></span>
+                <h3 th:text="${book.title}"></h3>
+                <p>Author: <strong th:text="${book.author}"></strong></p>
+                <p>Available: <span th:text="${book.quantity}"></span> units</p>
+                <p th:if="${book.description}" th:text="${book.description}" style="font-size:12px;color:#888;margin-top:5px;"></p>
+                <p class="price">Rs. <span th:text="${book.price}"></span></p>
+            </div>
+        </div>
+
+        <div class="empty" th:if="${#lists.isEmpty(books)}">
+            <p>No books found. Try a different search.</p>
+        </div>
+    </div>
+</body>
+</html>

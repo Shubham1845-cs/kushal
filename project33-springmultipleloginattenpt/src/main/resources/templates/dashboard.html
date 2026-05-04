@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+        .navbar { background: #333; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 5px; margin-bottom: 20px; }
+        .navbar h2 { margin: 0; font-size: 18px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h3 { color: #333; margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #333; color: white; }
+        tr:hover { background: #f9f9f9; }
+        .hash { font-family: monospace; font-size: 11px; color: #555; word-break: break-all; }
+        .logout-btn { padding: 7px 16px; background: white; color: #333; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .logout-btn:hover { background: #eee; }
+        .info { background: #f9f9f9; padding: 15px; border-radius: 3px; border-left: 4px solid #333; }
+        .info ul { margin-left: 20px; }
+        .info li { margin: 5px 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <h2>Dashboard</h2>
+            <div>
+                <span th:text="'Welcome, ' + ${username}"></span>
+                <form action="/logout" method="post" style="display:inline; margin-left:15px;">
+                    <button class="logout-btn" type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Authentication Successful</h3>
+            <p>You are logged in as: <strong th:text="${username}"></strong></p>
+
+            <div class="info" style="margin-top:15px;">
+                <strong>Security Features:</strong>
+                <ul>
+                    <li>Password encrypted using BCrypt</li>
+                    <li>Multiple login attempt protection</li>
+                    <li>Account locked after failed attempts</li>
+                    <li>Session-based authentication</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>All Users (Encrypted Passwords)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Encrypted Password (BCrypt Hash)</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.id}"></td>
+                        <td th:text="${user.username}"></td>
+                        <td class="hash" th:text="${user.password}"></td>
+                        <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

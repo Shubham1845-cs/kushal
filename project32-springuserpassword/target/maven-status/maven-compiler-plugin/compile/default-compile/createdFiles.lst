@@ -1,0 +1,6 @@
+com\example\securepassword\User.class
+com\example\securepassword\SecurePasswordApplication.class
+com\example\securepassword\MainController.class
+com\example\securepassword\UserService.class
+com\example\securepassword\UserRepository.class
+com\example\securepassword\SecurityConfig.class
